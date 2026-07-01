@@ -1,0 +1,326 @@
+:root {
+	--bg:      #1c1c1c;
+	--panel:   #252525;
+	--input:   #2e2e2e;
+	--border:  #3a3a3a;
+	--border2: #484848;
+	--accent:  #4e9fd4;
+	--muted:   #6a6a6a;
+	--text:    #d4d4d4;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	line-height: 1.4;
+	overflow: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* -- Panels ----------------------------------------------------------- */
+.panel { background: var(--panel); }
+
+.panel-title {
+	font-size: 9px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.13em;
+	color: var(--muted);
+	padding: 9px 14px 8px;
+	border-bottom: 1px solid var(--border);
+}
+
+/* -- Inputs ----------------------------------------------------------- */
+input[type=number], input[type=text], input[type=datetime-local] {
+	background: var(--input);
+	border: 1px solid var(--border2);
+	border-radius: 3px;
+	color: var(--text);
+	font-family: inherit;
+	font-size: 13px;
+	padding: 5px 8px;
+	outline: none;
+	transition: border-color .1s;
+	color-scheme: dark;
+}
+input[type=number]:focus, input[type=text]:focus,
+input[type=datetime-local]:focus { border-color: var(--accent); }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type=number] { -moz-appearance: textfield; }
+
+/* -- Sliders ---------------------------------------------------------- */
+input[type=range] {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 100%;
+	height: 3px;
+	background: var(--border);
+	border-radius: 2px;
+	outline: none;
+	cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--accent);
+	cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--accent);
+	border: none;
+	cursor: pointer;
+}
+
+/* -- Buttons ---------------------------------------------------------- */
+button {
+	font-family: inherit;
+	font-size: 12px;
+	padding: 6px 14px;
+	border: none;
+	border-radius: 3px;
+	cursor: pointer;
+	transition: opacity .1s;
+	white-space: nowrap;
+}
+button:hover  { opacity: .85; }
+button:active { opacity: .7;  }
+.btn-primary   { background: var(--accent); color: #fff; }
+.btn-secondary { background: var(--input);  color: var(--text); border: 1px solid var(--border2); }
+.btn-danger    { background: #3a1f1f; color: #d07070; border: 1px solid #5a2e2e; }
+
+/* -- Upload Zone ------------------------------------------------------ */
+#upload-zone {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	padding: 40px 20px;
+	gap: 14px;
+}
+
+#drop-area {
+	width: 100%;
+	max-width: 560px;
+	background: var(--panel);
+	border: 2px dashed var(--accent);
+	border-radius: 4px;
+	padding: 56px 40px;
+	text-align: center;
+	cursor: pointer;
+	transition: background .15s, border-color .15s;
+}
+#drop-area:hover, #drop-area.drag-over {
+	background: #1e2a36;
+	border-color: #6db8e8;
+}
+.drop-icon  { font-size: 36px; color: var(--accent); margin-bottom: 14px; line-height: 1; }
+.drop-label { font-size: 15px; color: var(--text); margin-bottom: 8px; }
+.drop-or    { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+.drop-hint  { font-size: 11px; color: var(--muted); margin-top: 16px; }
+
+#upload-error {
+	max-width: 560px;
+	width: 100%;
+	font-size: 12px;
+	color: #e07070;
+	padding: 8px 12px;
+	border-left: 2px solid #e07070;
+	background: #2a1c1c;
+	border-radius: 0 2px 2px 0;
+}
+
+/* -- Main Layout ------------------------------------------------------ */
+#main-layout {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+}
+
+#file-bar {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	background: var(--panel);
+	border-bottom: 2px solid var(--bg);
+	padding: 7px 14px;
+}
+#file-info { font-size: 12px; color: var(--muted); }
+#file-info strong { color: var(--text); font-weight: normal; }
+
+#columns {
+	flex: 1;
+	min-height: 0;
+	display: grid;
+	grid-template-columns: 1fr 380px;
+	gap: 2px;
+	background: var(--bg);
+}
+
+/* -- Viewer Column ---------------------------------------------------- */
+#viewer-col {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow: hidden;
+	min-height: 0;
+}
+#viewer-panel {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+#pannellum-container {
+	flex: 1;
+	min-height: 0;
+	position: relative;
+}
+#view-actions {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 14px;
+	background: var(--panel);
+}
+#view-actions .hint { font-size: 11px; color: var(--muted); }
+
+/* -- Controls Column -------------------------------------------------- */
+#controls-col {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow-y: auto;
+	overflow-x: hidden;
+	min-height: 0;
+}
+#controls-col::-webkit-scrollbar { width: 5px; }
+#controls-col::-webkit-scrollbar-track { background: var(--bg); }
+#controls-col::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* -- Orientation Controls --------------------------------------------- */
+.ctrl-body {
+	padding: 12px 14px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.ctrl-group { display: flex; flex-direction: column; gap: 7px; }
+.ctrl-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+.ctrl-label {
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.09em;
+	color: var(--muted);
+	flex: 1;
+}
+.ctrl-value { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.num-input  { width: 68px; text-align: right; padding: 4px 6px; font-size: 12px; }
+.ctrl-unit  { font-size: 11px; color: var(--muted); width: 14px; }
+
+/* -- GPS Panel -------------------------------------------------------- */
+.search-row {
+	display: flex;
+	gap: 6px;
+	padding: 10px 14px 8px;
+}
+.search-row input[type=text] { flex: 1; font-size: 12px; }
+.search-row button { padding: 5px 12px; font-size: 12px; }
+
+#map { height: 240px; border-top: 1px solid var(--border); }
+
+.gps-fields {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+	padding: 10px 14px;
+	border-top: 1px solid var(--border);
+}
+.gps-field label {
+	display: block;
+	font-size: 9px;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	color: var(--muted);
+	margin-bottom: 4px;
+}
+.gps-field input { width: 100%; font-size: 12px; }
+
+.gps-footer {
+	padding: 0 14px 12px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+.gps-footer .hint { font-size: 11px; color: var(--muted); }
+
+/* -- Command Panel ---------------------------------------------------- */
+#command-output {
+	font-family: 'Courier New', Courier, monospace;
+	font-size: 11px;
+	line-height: 1.65;
+	color: var(--text);
+	background: #141414;
+	border-top: 1px solid var(--border);
+	padding: 12px 14px;
+	overflow-x: auto;
+	white-space: pre;
+}
+.cmd-footer {
+	padding: 10px 14px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+#copy-status {
+	font-size: 11px;
+	color: var(--accent);
+	opacity: 0;
+	transition: opacity .3s;
+}
+#copy-status.visible { opacity: 1; }
+
+/* -- Toggle button active state ------------------------------------------- */
+.btn-secondary.active {
+	background: var(--accent);
+	color: #fff;
+	border-color: var(--accent);
+}
+
+/* -- Grid overlay --------------------------------------------------------- */
+#pano-grid {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	z-index: 10;
+	display: none;
+}
+#pano-grid.active { display: block; }
+#pano-grid::before,
+#pano-grid::after {
+	content: '';
+	position: absolute;
+	background: rgba(255,0,0,0.5);
+}
+#pano-grid::before { left:0; right:0; top:50%; height:1px; }
+#pano-grid::after  { top:0; bottom:0; left:50%; width:1px; }
+

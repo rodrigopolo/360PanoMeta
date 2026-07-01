@@ -1,0 +1,114 @@
+# 360° Panorama Metadata Generator
+
+A browser-based tool for setting orientation, GPS, and timestamp metadata on
+equirectangular 360° panorama images. It generates a ready-to-run `exiftool`
+command — no server, no upload, everything stays local.
+
+---
+
+## Requirements
+
+- A modern browser (Chrome, Safari, Firefox)
+- [`exiftool`](https://exiftool.org) installed and available in your `PATH`
+
+Open `360PanoMeta.html` directly from the filesystem — no web server needed.
+
+---
+
+## Usage
+
+1. **Drop or browse** an equirectangular panorama (JPEG, PNG, or TIFF; must be exactly 2:1 aspect ratio, e.g. 8192×4096).
+2. The image loads into a Pannellum 360° viewer. Any existing XMP-GPano, GPS, and date metadata is read automatically.
+3. Use the controls on the right to adjust orientation, location, and timestamp.
+4. **Copy** the generated `exiftool` command and run it in a terminal to write the metadata back to the file.
+
+---
+
+## Controls
+
+### Viewer panel
+
+| Control            | What it does                                                                                                                 |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Set North**      | Marks the current view direction as geographic North. Point at a known landmark or compass reference, then click.            |
+| **Set Start View** | Captures the current pan/tilt as the initial view direction that 360 platforms (Facebook, Google Photos, etc.) will open to. |
+| **Grid**           | Toggles a centre-crosshair overlay to help align the horizon.                                                                |
+
+### Orientation
+
+| Control                      | XMP-GPano tag written                                                    |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Heading — viewer navigation  | *(view only — used to aim the Straighten slider; not written to EXIF)*   |
+| Straighten — PoseRollDegrees | `PoseRollDegrees` + `PosePitchDegrees` (decomposed by heading direction) |
+| Initial FOV                  | `InitialHorizontalFOVDegrees`                                            |
+
+> **Straighten tip:** Navigate to a heading where the horizon is clearly
+> visible, then drag the slider until it's level. Repeat from a perpendicular
+> heading to fine-tune the pitch component.
+
+### GPS Location
+
+Search by place name, decimal coordinates (`37.7749, -122.4194`), or DMS
+(`14°33'44.7"N 90°31'20.9"W`). Click or drag the map marker to fine-tune.
+Latitude and longitude fields are also directly editable.
+
+### Date & Time
+
+| Field                 | Description                                                                                                                                                                                             |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Detect from image** | Reads the capture time from the filename (if it matches `IMG_YYYYMMDD_HHMMSS_…`) or falls back to EXIF `DateTimeOriginal` → `CreateDate` → `ModifyDate`. Timezone is pre-filled from your system clock. |
+| Date & Time           | `datetime-local` picker — editable to the second.                                                                                                                                                       |
+| Timezone              | UTC offset in `±HH:MM` format (e.g. `-06:00`, `+05:30`).                                                                                                                                                |
+
+When set, the command writes all standard date fields: `DateTimeOriginal`,
+`CreateDate`, `FileModifyDate`, `ModifyDate`, `OffsetTime*`,
+`IPTC:DigitalCreationDate/Time`, and `XMP:DateCreated`.
+
+---
+
+## Generated command
+
+The tool generates a single `exiftool` shell command that writes:
+
+- All six XMP-GPano orientation tags
+- GPS coordinates in DMS format (when set)
+- All date/time fields with timezone offset (when set)
+
+Example output:
+
+```sh
+exiftool \
+  -XMP-GPano:ProjectionType="equirectangular" \
+  -XMP-GPano:UsePanoramaViewer=True \
+  -XMP-GPano:FullPanoWidthPixels=16384 \
+  -XMP-GPano:FullPanoHeightPixels=8192 \
+  -XMP-GPano:CroppedAreaImageWidthPixels=16384 \
+  -XMP-GPano:CroppedAreaImageHeightPixels=8192 \
+  -XMP-GPano:CroppedAreaLeftPixels=0 \
+  -XMP-GPano:CroppedAreaTopPixels=0 \
+  -XMP-GPano:PoseHeadingDegrees=93.1 \
+  -XMP-GPano:PosePitchDegrees=0.8 \
+  -XMP-GPano:PoseRollDegrees=0.4 \
+  -XMP-GPano:InitialViewHeadingDegrees=0.3 \
+  -XMP-GPano:InitialViewPitchDegrees=14 \
+  -XMP-GPano:InitialHorizontalFOVDegrees=100 \
+  -GPSLatitude="14 33 40.3776" -GPSLatitudeRef=North \
+  -GPSLongitude="90 44 5.3628" -GPSLongitudeRef=West \
+  -DateTimeOriginal="2026:05:19 11:03:29" \
+  -CreateDate="2026:05:19 11:03:29" \
+  -FileModifyDate="2026:05:19 11:03:29-06:00" \
+  -ModifyDate="2026:05:19 11:03:29" \
+  -OffsetTime="-06:00" \
+  -OffsetTimeOriginal="-06:00" \
+  -OffsetTimeDigitized="-06:00" \
+  -IPTC:DigitalCreationDate="2026:05:19" \
+  -IPTC:TimeCreated="11:03:29-06:00" \
+  -IPTC:DigitalCreationTime="11:03:29-06:00" \
+  -XMP:DateCreated="2026:05:19 11:03:29.00-06:00" \
+  -overwrite_original \
+  "Injected.jpg"
+```
+
+## License
+
+MIT License — Copyright © 2026 Rodrigo Polo.

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>360° Panorama Metadata Generator</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════════════ UPLOAD ZONE ═══════════════════════════════════ -->
+<div id="upload-zone">
+	<div id="drop-area">
+		<div class="drop-icon">&#8659;</div>
+		<div class="drop-label">Drop equirectangular panorama here</div>
+		<div class="drop-or">or</div>
+		<button class="btn-primary" id="browse-btn">Browse File</button>
+		<input type="file" id="file-input" accept="image/*" style="display:none">
+		<div class="drop-hint">JPEG &nbsp;&nbsp;|&nbsp;&nbsp; Must be 2:1 aspect ratio &nbsp;(e.g. 8192&times;4096)</div>
+	</div>
+	<div id="upload-error" class="hidden"></div>
+</div>
+
+<!-- ═══════════════════ MAIN LAYOUT ═══════════════════════════════════ -->
+<div id="main-layout" class="hidden">
+
+	<div id="file-bar">
+		<span id="file-info"></span>
+		<button class="btn-secondary" id="reset-btn">Load New Image</button>
+	</div>
+
+	<div id="columns">
+
+		<!-- -- Left: Viewer --------------------------------------- -->
+		<div id="viewer-col">
+			<div id="viewer-panel" class="panel">
+				<div class="panel-title">360&deg; PREVIEW</div>
+				<div id="pannellum-container">
+					<div id="pano-grid" class="active"></div>
+				</div>
+			</div>
+			<div id="view-actions" class="panel">
+				<button class="btn-secondary" id="set-north">Set North</button>
+				<button class="btn-secondary" id="use-current-view">Set Start View</button>
+				<button class="btn-secondary active" id="toggle-grid">Grid</button>
+				<span class="hint">Navigate, then use buttons to capture north &amp; heading.</span>
+			</div>
+		</div>
+
+		<!-- -- Right: Controls ------------------------------------ -->
+		<div id="controls-col">
+
+			<!-- Orientation -->
+			<div class="panel">
+				<div class="panel-title">ORIENTATION</div>
+				<div class="ctrl-body">
+
+					<div class="ctrl-group">
+						<div class="ctrl-header">
+							<span class="ctrl-label">Heading / viewer navigation</span>
+							<div class="ctrl-value">
+								<input type="number" class="num-input" id="heading-num" value="0" min="0" max="360" step="0.1">
+								<span class="ctrl-unit">&deg;</span>
+							</div>
+						</div>
+						<input type="range" id="heading-slider" min="0" max="360" step="0.1" value="0">
+					</div>
+
+					<div class="ctrl-group">
+						<div class="ctrl-header">
+							<span class="ctrl-label">Straighten</span>
+							<div class="ctrl-value">
+								<input type="number" class="num-input" id="straighten" value="0" min="-30" max="30" step="0.1">
+								<span class="ctrl-unit">&deg;</span>
+							</div>
+						</div>
+						<input type="range" id="straighten-slider" min="-30" max="30" step="0.1" value="0">
+					</div>
+
+					<div class="ctrl-group">
+						<div class="ctrl-header">
+							<span class="ctrl-label">Initial FOV</span>
+							<div class="ctrl-value">
+								<input type="number" class="num-input" id="initial-fov" value="100" min="30" max="150" step="1">
+								<span class="ctrl-unit">&deg;</span>
+							</div>
+						</div>
+						<input type="range" id="initial-fov-slider" min="30" max="150" step="1" value="100">
+					</div>
+
+				</div>
+			</div>
+
+			<!-- GPS Location -->
+			<div class="panel">
+				<div class="panel-title">GPS Location</div>
+				<div class="search-row">
+					<input type="text" id="location-search"
+						placeholder="14&deg;33'44.7&quot;N 90&deg;31'20.9&quot;W  or  37.7749, -122.4194">
+					<button class="btn-secondary" id="search-btn">Set</button>
+				</div>
+				<div id="map"></div>
+				<div class="gps-fields">
+					<div class="gps-field">
+						<label>Latitude</label>
+						<input type="number" id="lat-input" placeholder="0.000000" step="0.000001" min="-90" max="90">
+					</div>
+					<div class="gps-field">
+						<label>Longitude</label>
+						<input type="number" id="lon-input" placeholder="0.000000" step="0.000001" min="-180" max="180">
+					</div>
+				</div>
+				<div class="gps-footer">
+					<button class="btn-danger" id="clear-gps-btn">Clear GPS</button>
+					<span class="hint">Click the map or drag the marker to adjust position.</span>
+				</div>
+			</div>
+
+			<!-- Date & Time -->
+			<div class="panel">
+				<div class="panel-title">Date &amp; Time</div>
+				<div class="search-row">
+					<button class="btn-secondary" id="detect-date-btn">Detect from image</button>
+				</div>
+				<div class="gps-fields">
+					<div class="gps-field">
+						<label>Date &amp; Time</label>
+						<input type="datetime-local" id="datetime-input" step="1">
+					</div>
+					<div class="gps-field">
+						<label>Timezone</label>
+						<input type="text" id="tz-input" placeholder="+00:00" maxlength="6">
+					</div>
+				</div>
+				<div class="gps-footer">
+					<button class="btn-danger" id="clear-date-btn">Clear Date</button>
+					<span class="hint">Capture time and UTC offset, e.g. <code>-06:00</code>.</span>
+				</div>
+			</div>
+
+			<!-- Exiftool Command -->
+			<div class="panel">
+				<div class="panel-title">EXIFTOOL command</div>
+				<pre id="command-output"></pre>
+				<div class="cmd-footer">
+					<button class="btn-primary" id="copy-cmd">Copy Command</button>
+					<span id="copy-status">Copied!</span>
+				</div>
+			</div>
+
+		</div><!-- #controls-col -->
+	</div><!-- #columns -->
+</div><!-- #main-layout -->
+
+<script src="https://cdn.jsdelivr.net/npm/pannellum@2.5.7/build/pannellum.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7/dist/full.umd.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
