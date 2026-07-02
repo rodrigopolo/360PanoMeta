@@ -105,7 +105,7 @@ function resetControls() {
 
 // -- Heading navigation control (viewer-only, not stored as metadata) -------
 function setHeading(compassBearing) {
-	const v = r1(clamp(parseFloat(compassBearing) || 0, 0, 360));
+	const v = r1(PanoRotation.normalize360(parseFloat(compassBearing) || 0));
 	document.getElementById('heading-slider').value = v;
 	document.getElementById('heading-num').value    = v;
 	// Freeze accumulated correction and reset Straighten slider
@@ -175,7 +175,9 @@ function buildViewer() {
 	if (viewer) { viewer.destroy(); viewer = null; }
 
 	const northOffset = p.poseHeading;
-	let yaw = p.initialHeading > 180 ? p.initialHeading - 360 : p.initialHeading;
+	const pose  = { heading: p.poseHeading, pitch: p.horizonPitch, roll: p.horizonRoll };
+	const local = PanoRotation.worldToLocal(pose, { heading: p.initialHeading, pitch: p.initialPitch });
+	const yaw   = local.heading > 180 ? local.heading - 360 : local.heading;
 
 	viewer = pannellum.viewer('pannellum-container', {
 		type:         'equirectangular',
@@ -183,7 +185,7 @@ function buildViewer() {
 		autoLoad:     true,
 		compass:      true,
 		northOffset:  northOffset,
-		pitch:        p.initialPitch + p.horizonPitch,
+		pitch:        local.pitch,
 		yaw:          yaw,
 		hfov:         p.initialFov,
 		horizonPitch: p.horizonPitch,
@@ -201,10 +203,11 @@ function applyLiveUpdate(changedKey) {
 // -- Action buttons ---------------------------------------------------------
 document.getElementById('use-current-view').addEventListener('click', () => {
 	if (!viewer) return;
-	const yaw   = viewer.getYaw();
-	const pitch = viewer.getPitch();
-	p.initialHeading = r1(clamp(((yaw % 360) + 360) % 360, 0, 360));
-	p.initialPitch   = r1(clamp(pitch - p.horizonPitch, -90, 90));
+	const local = { heading: PanoRotation.normalize360(viewer.getYaw()), pitch: viewer.getPitch() };
+	const pose  = { heading: p.poseHeading, pitch: p.horizonPitch, roll: p.horizonRoll };
+	const world = PanoRotation.localToWorld(pose, local);
+	p.initialHeading = r1(world.heading);
+	p.initialPitch   = r1(clamp(world.pitch, -90, 90));
 	generateCommand();
 });
 
@@ -300,10 +303,10 @@ async function readExif(file) {
 		// Slider-bound fields
 		if (typeof data.InitialHorizontalFOVDegrees === 'number') setControl('initial-fov', data.InitialHorizontalFOVDegrees);
 		// Non-slider fields — assign directly to p
-		if (typeof data.PoseHeadingDegrees        === 'number') p.poseHeading    = r1(clamp(data.PoseHeadingDegrees,        0,  360));
+		if (typeof data.PoseHeadingDegrees        === 'number') p.poseHeading    = r1(PanoRotation.normalize360(data.PoseHeadingDegrees));
 		if (typeof data.PosePitchDegrees          === 'number') p.horizonPitch   = r1(clamp(data.PosePitchDegrees,        -90,   90));
 		if (typeof data.PoseRollDegrees           === 'number') p.horizonRoll    = r1(clamp(data.PoseRollDegrees,         -180,  180));
-		if (typeof data.InitialViewHeadingDegrees === 'number') p.initialHeading = r1(clamp(data.InitialViewHeadingDegrees,  0,  360));
+		if (typeof data.InitialViewHeadingDegrees === 'number') p.initialHeading = r1(PanoRotation.normalize360(data.InitialViewHeadingDegrees));
 		if (typeof data.InitialViewPitchDegrees   === 'number') p.initialPitch   = r1(clamp(data.InitialViewPitchDegrees,  -90,   90));
 		detectDateTime(file, data);
 
