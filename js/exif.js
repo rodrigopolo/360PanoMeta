@@ -13,6 +13,7 @@ async function readExif(file) {
 		}
 		// Slider-bound fields
 		if (typeof data.InitialHorizontalFOVDegrees === 'number') setControl('initial-fov', data.InitialHorizontalFOVDegrees);
+		if (typeof data.InitialViewRollDegrees      === 'number') setControl('initial-roll', data.InitialViewRollDegrees);
 		// Non-slider fields — assign directly to p
 		if (typeof data.PoseHeadingDegrees        === 'number') p.poseHeading    = r1(PanoRotation.normalize360(data.PoseHeadingDegrees));
 		if (typeof data.PosePitchDegrees          === 'number') p.horizonPitch   = r1(clamp(data.PosePitchDegrees,        -90,   90));

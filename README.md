@@ -41,6 +41,7 @@ Open `360PanoMeta.html` directly from the filesystem - no web server needed.
 | Heading - viewer navigation  | *(view only - used to aim the Straighten slider; not written to EXIF)*   |
 | Straighten - PoseRollDegrees | `PoseRollDegrees` + `PosePitchDegrees` (decomposed by heading direction) |
 | Initial FOV                  | `InitialHorizontalFOVDegrees`                                            |
+| Initial View Roll            | `InitialViewRollDegrees`                                                 |
 
 > **Straighten tip:** Navigate to a heading where the horizon is clearly
 > visible, then drag the slider until it's level. Repeat from a perpendicular
@@ -91,6 +92,7 @@ exiftool \
   -XMP-GPano:PoseRollDegrees=0.4 \
   -XMP-GPano:InitialViewHeadingDegrees=0.3 \
   -XMP-GPano:InitialViewPitchDegrees=0 \
+  -XMP-GPano:InitialViewRollDegrees=0 \
   -XMP-GPano:InitialHorizontalFOVDegrees=100 \
   -GPSLatitude="14 33 40.3776" -GPSLatitudeRef=North \
   -GPSLongitude="90 44 5.3628" -GPSLongitudeRef=West \
@@ -187,7 +189,6 @@ exiftool \
 
 ## To-dos
 - Add an extra option to support the broken implementation of Facebook panoramas.
-- Handle the `InitialViewPitchDegrees` tag.
 
 ## License
 

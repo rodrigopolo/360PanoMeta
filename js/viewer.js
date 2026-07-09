@@ -96,14 +96,45 @@ function buildViewer() {
 		showControls: true,
 	});
 	document.getElementById('pannellum-container').appendChild(gridEl);
+	applyInitialRoll();
 }
 
+// Pannellum has no viewport-roll API, so InitialViewRollDegrees is applied as
+// a CSS rotation on .pnlm-render-container (the canvas alone, a sibling of
+// the zoom/fullscreen controls and compass) rather than through Pannellum
+// itself. The container is scaled up so its rotated bounds still fully cover
+// the viewport with no corner gaps: for a W×H rect rotated by θ, the minimal
+// covering scale is |cosθ| + max(W/H, H/W)·|sinθ| (derived from requiring
+// all 4 viewport corners stay inside the rotated, scaled rect). Sign
+// matches the horizonRoll convention below: CSS rotate() is
+// clockwise-positive, GPano roll is counterclockwise-positive, so θ = -roll.
+function applyInitialRoll() {
+	const container = document.querySelector('#pannellum-container .pnlm-render-container');
+	if (!container) return;
+	// offsetWidth/offsetHeight, not getBoundingClientRect(): the container
+	// already carries the rotate()/scale() transform from the previous call,
+	// and getBoundingClientRect() reports the transformed (rotated) box, not
+	// the untransformed layout size — feeding that back in would compound
+	// the distortion on every subsequent call.
+	const w = container.offsetWidth, h = container.offsetHeight;
+	if (!w || !h) return;
+	const rad   = p.initialRoll * Math.PI / 180;
+	const scale = Math.abs(Math.cos(rad)) + Math.max(w / h, h / w) * Math.abs(Math.sin(rad));
+	container.style.transform = 'rotate(' + (-p.initialRoll) + 'deg) scale(' + scale + ')';
+}
+
+window.addEventListener('resize', () => { if (viewer) applyInitialRoll(); });
+
 function applyLiveUpdate(changedKey) {
-	if (!viewer || changedKey !== 'initialFov') return;
-	viewer.setHfov(p.initialFov, false);
+	if (!viewer) return;
+	if (changedKey === 'initialFov')  viewer.setHfov(p.initialFov, false);
+	if (changedKey === 'initialRoll') applyInitialRoll();
 }
 
 // -- Action buttons -----------------------------------------------------------
+// Note: unlike heading/pitch, there's no drag gesture that produces roll, so
+// "Set Start View" below can't capture InitialViewRollDegrees — it's only
+// adjustable via the Initial View Roll slider.
 document.getElementById('use-current-view').addEventListener('click', () => {
 	if (!viewer) return;
 	p.initialHeading = r1(PanoRotation.normalize360(viewer.getYaw() + p.poseHeading));

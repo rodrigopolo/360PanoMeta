@@ -22,6 +22,7 @@ const p = {
 	poseHeading:    0,   // set by Set North + EXIF
 	initialHeading: 0,   // set by Use Current View + EXIF
 	initialPitch:   0,   // set by Use Current View + EXIF
+	initialRoll:    0,   // set by Initial View Roll slider + EXIF
 	horizonPitch:   0,   // derived from Straighten + heading
 	horizonRoll:    0,   // derived from Straighten + heading
 	initialFov:     100, // FOV slider
@@ -31,6 +32,7 @@ const loadedVals = {
 	poseHeading:    0,
 	initialHeading: 0,
 	initialPitch:   0,
+	initialRoll:    0,
 	horizonPitch:   0,
 	horizonRoll:    0,
 	initialFov:     120,
@@ -38,7 +40,8 @@ const loadedVals = {
 
 // -- Control definitions (slider-bound controls only) -----------------------
 const CONTROLS = [
-	{ id: 'initial-fov', key: 'initialFov', min: 30, max: 120, def: 120 },
+	{ id: 'initial-fov',  key: 'initialFov',  min: 30,   max: 120, def: 120 },
+	{ id: 'initial-roll', key: 'initialRoll', min: -180, max: 180, def: 0   },
 ];
 
 // -- Slider ↔ number input binding -----------------------------------------

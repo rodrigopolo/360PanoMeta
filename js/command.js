@@ -21,6 +21,7 @@ function generateCommand() {
 		'  -XMP-GPano:PoseRollDegrees='                  + p.horizonRoll    + ' \\',
 		'  -XMP-GPano:InitialViewHeadingDegrees='        + p.initialHeading + ' \\',
 		'  -XMP-GPano:InitialViewPitchDegrees='          + p.initialPitch   + ' \\',
+		'  -XMP-GPano:InitialViewRollDegrees='           + p.initialRoll    + ' \\',
 		'  -XMP-GPano:InitialHorizontalFOVDegrees='      + p.initialFov     + ' \\',
 	];
 
