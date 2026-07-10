@@ -16,13 +16,13 @@ function generateCommand() {
 		'  -XMP-GPano:CroppedAreaImageHeightPixels='     + imageH + ' \\',
 		'  -XMP-GPano:CroppedAreaLeftPixels=0 \\',
 		'  -XMP-GPano:CroppedAreaTopPixels=0 \\',
-		'  -XMP-GPano:PoseHeadingDegrees='               + p.poseHeading    + ' \\',
-		'  -XMP-GPano:PosePitchDegrees='                 + p.horizonPitch   + ' \\',
-		'  -XMP-GPano:PoseRollDegrees='                  + p.horizonRoll    + ' \\',
-		'  -XMP-GPano:InitialViewHeadingDegrees='        + p.initialHeading + ' \\',
-		'  -XMP-GPano:InitialViewPitchDegrees='          + p.initialPitch   + ' \\',
-		'  -XMP-GPano:InitialViewRollDegrees='           + p.initialRoll    + ' \\',
-		'  -XMP-GPano:InitialHorizontalFOVDegrees='      + p.initialFov     + ' \\',
+		'  -XMP-GPano:PoseHeadingDegrees='               + p.poseHeading.toFixed(1)    + ' \\',
+		'  -XMP-GPano:PosePitchDegrees='                 + p.horizonPitch.toFixed(1)   + ' \\',
+		'  -XMP-GPano:PoseRollDegrees='                  + p.horizonRoll.toFixed(1)    + ' \\',
+		'  -XMP-GPano:InitialViewHeadingDegrees='        + p.initialHeading.toFixed(1) + ' \\',
+		'  -XMP-GPano:InitialViewPitchDegrees='          + p.initialPitch.toFixed(1)   + ' \\',
+		'  -XMP-GPano:InitialViewRollDegrees='           + p.initialRoll.toFixed(1)    + ' \\',
+		'  -XMP-GPano:InitialHorizontalFOVDegrees='      + p.initialFov.toFixed(1)     + ' \\',
 	];
 
 	if (gpsLat !== null && gpsLon !== null) {
