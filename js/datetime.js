@@ -21,7 +21,9 @@ function detectDateTime(file, data) {
 
 	document.getElementById('datetime-input').value = dtLocal;
 	photoDate = fromDatetimeLocal(dtLocal);
-	tzOffset  = systemTzOffset();
+
+	const embeddedOffset = data && (data.OffsetTimeOriginal || data.OffsetTime || data.OffsetTimeDigitized);
+	tzOffset = isValidOffset(embeddedOffset) ? embeddedOffset : systemTzOffset();
 	document.getElementById('tz-input').value = tzOffset;
 }
 
@@ -39,6 +41,11 @@ document.getElementById('detect-date-btn').addEventListener('click', async () =>
 
 document.getElementById('datetime-input').addEventListener('input', () => {
 	photoDate = fromDatetimeLocal(document.getElementById('datetime-input').value);
+	const tzInput = document.getElementById('tz-input');
+	if (photoDate && !tzInput.value.trim()) {
+		tzOffset = systemTzOffset();
+		tzInput.value = tzOffset;
+	}
 	generateCommand();
 });
 

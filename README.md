@@ -55,11 +55,15 @@ Latitude and longitude fields are also directly editable.
 
 ### Date & Time
 
-| Field                 | Description                                                                                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Detect from image** | Reads the capture time from the filename (if it matches `IMG_YYYYMMDD_HHMMSS_…` or `YYYY-MM-DD HH.MM.SS IMG_###`) or falls back to EXIF `DateTimeOriginal` → `CreateDate` → `ModifyDate`. Timezone is pre-filled from your system clock. |
-| Date & Time           | `datetime-local` picker - editable to the second.                                                                                                                                                       |
-| Timezone              | UTC offset in `±HH:MM` format (e.g. `-06:00`, `+05:30`).                                                                                                                                                |
+| Field                 | Description                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Detect from image** | Reads the capture time from the filename (if it matches `IMG_YYYYMMDD_HHMMSS_…` or `YYYY-MM-DD HH.MM.SS IMG_###`) or falls back to EXIF `DateTimeOriginal` → `CreateDate` → `ModifyDate`. Timezone is pre-filled from the image's own EXIF offset (`OffsetTimeOriginal`/`OffsetTime`/`OffsetTimeDigitized`) when present, otherwise from your system clock. |
+| Date & Time           | `datetime-local` picker - editable to the second.                                                                                                                                                                                                                                                                                                           |
+| Timezone              | UTC offset in `±HH:MM` format (e.g. `-06:00`, `+05:30`).                                                                                                                                                                                                                                                                                                    |
+
+If no date was auto-detected, manually entering a Date & Time also pre-fills
+an empty Timezone field from your system clock, so the generated command
+doesn't silently omit the date tags.
 
 When set, the command writes all standard date fields: `DateTimeOriginal`,
 `CreateDate`, `FileModifyDate`, `ModifyDate`, `OffsetTime*`,
@@ -87,13 +91,13 @@ exiftool \
   -XMP-GPano:CroppedAreaImageHeightPixels=8192 \
   -XMP-GPano:CroppedAreaLeftPixels=0 \
   -XMP-GPano:CroppedAreaTopPixels=0 \
-  -XMP-GPano:PoseHeadingDegrees=93.1 \
-  -XMP-GPano:PosePitchDegrees=0.8 \
-  -XMP-GPano:PoseRollDegrees=0.4 \
-  -XMP-GPano:InitialViewHeadingDegrees=0.3 \
+  -XMP-GPano:PoseHeadingDegrees=90.0 \
+  -XMP-GPano:PosePitchDegrees=0.5 \
+  -XMP-GPano:PoseRollDegrees=0.5 \
+  -XMP-GPano:InitialViewHeadingDegrees=90.0 \
   -XMP-GPano:InitialViewPitchDegrees=0.0 \
   -XMP-GPano:InitialViewRollDegrees=0.0 \
-  -XMP-GPano:InitialHorizontalFOVDegrees=100.0 \
+  -XMP-GPano:InitialHorizontalFOVDegrees=120.0 \
   -GPSLatitude="14 33 40.3776" -GPSLatitudeRef=North \
   -GPSLongitude="90 44 5.3628" -GPSLongitudeRef=West \
   -DateTimeOriginal="2026:05:19 11:03:29" \
@@ -108,84 +112,15 @@ exiftool \
   -IPTC:DigitalCreationTime="11:03:29-06:00" \
   -XMP:DateCreated="2026:05:19 11:03:29.00-06:00" \
   -overwrite_original \
-  "Injected.jpg"
+  "Panorama.jpg"
 ```
 
 ## Google Photo Sphere XMP schema
 
-> After thoroughly reading and testing each tag, including translating them
-> into other languages and discovering serious wording errors like *"from
-> North, for **the** center **the** image"* I decided to add my own wording to
-> the [GPano
-> specs](https://developers.google.com/streetview/spherical-metadata#gpano_parameter_reference).
-> I know these parameters have not been implemented correctly in virtually any
-> 360-degree panorama viewer and I guess the issue is the lack of clarity on
-> the definitions.
->
-> To make the pose tags easier to understand, think the point of reference as a
-> 3D sphere stuck to the Earth’s surface, pointing north and perfectly leveled
-> with earths horizon, like a little 3D sphere attached to a much larger 3D
-> sphere (the Earth). This is why the **X-axis points East**, and the **Y-axis
-> points North** and the **Z-axis points up** from the 3D sphere perspective.
-> Our panorama image is the texture of that 3D sphere, the Pose tags moves the
-> image texture having the center of our panorama image (pivot) relative to the
-> 3D sphere North which is fixed in 3D space. The initial view moves the camera
-> inside the 3D sphere relative to the 3D space rather than to the panorama
-> image itself.
-
-* **GPano:PoseHeadingDegrees:**  
-  Defines the distance in clockwise degrees from the 3D sphere north to the
-  center of the panorama image.  
-  **Exiftool argument:** `-XMP-GPano:PoseHeadingDegrees`  
-  **Value:** Degrees, `>= 0` to `< 360`  
-  **Example:** Set to `270` if from the panorama image perspective, the true
-  North is located East, because from the perspective of the 3D sphere North,
-  the image center is `-90°`, but we can't use negative numbers, so from the 3D
-  sphere North to the panorama image center there are `270°` using a clockwise
-  direction.
-
-* **GPano:PosePitchDegrees**  
-  Defines in degrees the pitch between the 3D sphere horizon to the center of
-  the image. Positive values move the image center horizon up, negative values
-  move the image center horizon down.
-  **Exiftool argument:** `-XMP-GPano:PosePitchDegrees`  
-  **Value:** `>= -90` to `<= 90`  
-  **Example:** Set to `5` if the horizon at the center of your image shows a
-  point that is `-5°` below the 3D sphere horizon or true horizon.
-
-* **GPano:PoseRollDegrees**  
-  Defines, in degrees, the roll of the image relative to the 3D sphere horizon
-  or real-world horizon, applied as the image is mapped onto the 3D sphere. A
-  value of 0 means the horizon is level. As the value increases, the horizon
-  visually rotates counterclockwise within the image (and, correspondingly,
-  within the sphere it's textured onto).
-  **Exiftool argument:** `-XMP-GPano:PoseRollDegrees`  
-  **Value:** `> -180` to `<= 180`  
-  **Example:** If the horizon in your image is tilted 5° clockwise, set +5 to
-  level it, because positive numbers move the panorama image counterclockwise
-  in relation to the 3D sphere.
-
-* **GPano:InitialViewHeadingDegrees**  
-  Heading of the initial view (what the user sees first), in degrees clockwise
-  from 3D sphere North. Not relative to the panorama image center but relative
-  to the 3D sphere or real-world, in other words, it moves the camera left and
-  right.
-  **Exiftool argument:** `-XMP-GPano:InitialViewHeadingDegrees`  
-  **Value:** `>= 0` to `< 360`
-
-* **GPano:InitialViewPitchDegrees**  
-  Pitch of the initial view, in degrees above the 3D sphere horizon. Not
-  relative to the panorama image center but relative to the 3D sphere or
-  real-world. In other words, tilts the camera in 3D space, positive numbers tilt the camera up, negative numbers tilt the camera down.  
-  **Exiftool argument:** `-XMP-GPano:InitialViewPitchDegrees`
-  **Value:** `>= -90` to `<= 90`
-
-* **GPano:InitialViewRollDegrees**.  
-  Roll of the initial view. Level with the 3D sphere horizon, a value of 0
-  means the horizon is level. As the value increases, the horizon in the view
-  rotates counterclockwise because we are moving the 3D camera clockwise.
-  **Exiftool argument:** `-XMP-GPano:InitialViewRollDegrees`  
-  **Value:** `> -180` to `<= 180`
+To check how this project complies with the Google Photo Sphere XMP schema
+using sample images, use the images available in this repository, which also
+includes a detailed explanation of the schema and how to implement it in any
+panorama viewer: https://github.com/rodrigopolo/360GPanoReference
 
 ## To-dos
 - Add an extra option to support the broken implementation of Facebook panoramas.
