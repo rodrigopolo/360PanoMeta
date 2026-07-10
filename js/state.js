@@ -14,6 +14,7 @@ let gpsLat    = null;
 let gpsLon    = null;
 let photoDate = null;   // 'YYYY:MM:DD HH:MM:SS' or null
 let tzOffset  = null;   // '+HH:MM' / '-HH:MM' or null
+let targetViewer = 'strict'; // 'strict' / 'facebook' / 'psv' / 'spherical'
 let currentFile = null; // File reference for "Detect from image"
 let baseRoll  = 0;      // accumulated horizonRoll before current Straighten session
 let basePitch = 0;      // accumulated horizonPitch before current Straighten session
@@ -101,4 +102,8 @@ function resetControls() {
 	tzOffset  = null;
 	document.getElementById('datetime-input').value = '';
 	document.getElementById('tz-input').value        = '';
+	targetViewer = 'strict';
+	document.getElementById('target-viewer').value = 'strict';
+	document.getElementById('viewer-warnings').classList.add('hidden');
+	document.getElementById('viewer-warnings').textContent = '';
 }

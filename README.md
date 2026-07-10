@@ -115,15 +115,55 @@ exiftool \
   "Panorama.jpg"
 ```
 
+## Target viewer compatibility
+
+Real-world testing across 15 panoramas found that some 360&deg; viewers
+mis-render specific GPano Pose/InitialView tags. Two bug shapes were found:
+
+- **Sign-flip** - a viewer applies the tag with the opposite sign of what the
+  spec defines. This can be compensated by writing the negated value.
+- **Non-linear/broken** - a viewer renders the tag unpredictably (e.g. snaps
+  pitch to &plusmn;90&deg; regardless of the value written). No value we
+  write can fix this, so the tag is omitted instead.
+
+| Tag                       | Facebook | Photo Sphere Viewer        | Spherical Viewer      |
+| ------------------------- | -------- | -------------------------- | --------------------- |
+| PoseHeadingDegrees        | ignored  | inverted (clean sign-flip) | correct               |
+| PosePitchDegrees          | ignored  | correct                    | snaps to ±90 (broken) |
+| PoseRollDegrees           | ignored  | inverted (clean sign-flip) | ignored               |
+| InitialViewHeadingDegrees | correct  | broken, non-linear         | correct               |
+| InitialViewPitchDegrees   | correct  | broken, non-linear         | snaps to ±90 (broken) |
+| InitialViewRollDegrees    | ignored  | ignored                    | ignored               |
+
+The **Target Viewer** dropdown above the generated command lets you opt into
+work-arounds for a specific viewer. The default, **Default (spec-compliant)**,
+always writes every tag as-is - choosing a target is a deliberate override,
+never the default behavior.
+
+| Tag                         | Facebook | Photo Sphere Viewer   | Spherical Viewer |
+| ---------------------------- | -------- | ---------------------- | ------------------ |
+| `PoseHeadingDegrees`         | strip    | compensate (inverted)  | write              |
+| `PosePitchDegrees`           | strip    | write                  | strip              |
+| `PoseRollDegrees`            | strip    | compensate (inverted)  | strip              |
+| `InitialViewHeadingDegrees`  | write    | strip                  | write              |
+| `InitialViewPitchDegrees`    | write    | strip                  | strip              |
+| `InitialViewRollDegrees`     | strip    | strip                  | strip              |
+
+When a tag is stripped or compensated for the chosen target, a warning
+appears above the command explaining which tag was affected and why.
+
+> **Known upstream bug:** Photo Sphere Viewer's non-linear handling of
+> `InitialViewHeadingDegrees`/`InitialViewPitchDegrees` isn't fully
+> understood - it doesn't fail consistently enough to reverse-engineer a
+> compensation formula, so both are stripped for that target. Worth filing
+> as an issue against PSV separately.
+
 ## Google Photo Sphere XMP schema
 
 To check how this project complies with the Google Photo Sphere XMP schema
 using sample images, use the images available in this repository, which also
 includes a detailed explanation of the schema and how to implement it in any
 panorama viewer: https://github.com/rodrigopolo/360GPanoReference
-
-## To-dos
-- Add an extra option to support the broken implementation of Facebook panoramas.
 
 ## License
 

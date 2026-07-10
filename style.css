@@ -282,7 +282,9 @@ button:active { opacity: .7;  }
 	color: var(--muted);
 	margin-bottom: 4px;
 }
-.gps-field input { width: 100%; font-size: 12px; }
+.gps-field input,
+.gps-field select { width: 100%; font-size: 12px; }
+.gps-field.full-width { grid-column: 1 / -1; }
 
 .gps-footer {
 	padding: 0 14px 12px;
@@ -293,6 +295,17 @@ button:active { opacity: .7;  }
 .gps-footer .hint { font-size: 11px; color: var(--muted); }
 
 /* -- Command Panel ---------------------------------------------------- */
+#viewer-warnings {
+	margin: 0 14px 10px;
+	font-size: 11px;
+	color: #d9a441;
+	padding: 8px 12px;
+	border-left: 2px solid #d9a441;
+	background: #2a2418;
+	border-radius: 0 2px 2px 0;
+}
+#viewer-warnings div + div { margin-top: 4px; }
+
 #command-output {
 	font-family: 'Courier New', Courier, monospace;
 	font-size: 11px;

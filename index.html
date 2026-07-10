@@ -162,6 +162,18 @@
 			<!-- Exiftool Command -->
 			<div class="panel">
 				<div class="panel-title">ExifTool command</div>
+				<div class="gps-fields">
+					<div class="gps-field full-width">
+						<label>Target Viewer</label>
+						<select id="target-viewer">
+							<option value="strict" selected>Default (spec-compliant)</option>
+							<option value="facebook">Facebook</option>
+							<option value="psv">Photo Sphere Viewer</option>
+							<option value="spherical">Spherical Viewer</option>
+						</select>
+					</div>
+				</div>
+				<div id="viewer-warnings" class="hidden"></div>
 				<pre id="command-output"></pre>
 				<div class="cmd-footer">
 					<button class="btn-primary" id="copy-cmd">Copy Command</button>
@@ -179,6 +191,7 @@
 <script src="js/state.js"></script>
 <script src="js/calc.js"></script>
 <script src="js/rotation.js"></script>
+<script src="js/viewer-policy.js"></script>
 <script src="js/map.js"></script>
 <script src="js/viewer.js"></script>
 <script src="js/datetime.js"></script>

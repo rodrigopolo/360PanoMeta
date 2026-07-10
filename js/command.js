@@ -16,14 +16,41 @@ function generateCommand() {
 		'  -XMP-GPano:CroppedAreaImageHeightPixels='     + imageH + ' \\',
 		'  -XMP-GPano:CroppedAreaLeftPixels=0 \\',
 		'  -XMP-GPano:CroppedAreaTopPixels=0 \\',
-		'  -XMP-GPano:PoseHeadingDegrees='               + p.poseHeading.toFixed(1)    + ' \\',
-		'  -XMP-GPano:PosePitchDegrees='                 + p.horizonPitch.toFixed(1)   + ' \\',
-		'  -XMP-GPano:PoseRollDegrees='                  + p.horizonRoll.toFixed(1)    + ' \\',
-		'  -XMP-GPano:InitialViewHeadingDegrees='        + p.initialHeading.toFixed(1) + ' \\',
-		'  -XMP-GPano:InitialViewPitchDegrees='          + p.initialPitch.toFixed(1)   + ' \\',
-		'  -XMP-GPano:InitialViewRollDegrees='           + p.initialRoll.toFixed(1)    + ' \\',
-		'  -XMP-GPano:InitialHorizontalFOVDegrees='      + p.initialFov.toFixed(1)     + ' \\',
 	];
+
+	const ORIENTATION_TAGS = [
+		['PoseHeadingDegrees',        p.poseHeading],
+		['PosePitchDegrees',          p.horizonPitch],
+		['PoseRollDegrees',           p.horizonRoll],
+		['InitialViewHeadingDegrees', p.initialHeading],
+		['InitialViewPitchDegrees',   p.initialPitch],
+		['InitialViewRollDegrees',    p.initialRoll],
+	];
+	const warnings   = [];
+	const targetInfo = targetViewer !== 'strict' ? ViewerPolicy.VIEWER_TARGETS[targetViewer] : null;
+	const targetLabel = targetInfo ? targetInfo.label : null;
+
+	ORIENTATION_TAGS.forEach(([tag, rawValue]) => {
+		const { action, value } = ViewerPolicy.resolveTagAction(tag, rawValue, targetViewer);
+		if (action === 'STRIP') {
+			if (targetLabel) warnings.push(ViewerPolicy.describeAction(tag, action, targetLabel));
+			return;
+		}
+		if (action === 'COMPENSATE' && targetLabel) {
+			warnings.push(ViewerPolicy.describeAction(tag, action, targetLabel));
+		}
+		lines.push('  -XMP-GPano:' + tag + '=' + value.toFixed(1) + ' \\');
+	});
+	lines.push('  -XMP-GPano:InitialHorizontalFOVDegrees=' + p.initialFov.toFixed(1) + ' \\');
+
+	const warningsEl = document.getElementById('viewer-warnings');
+	if (warnings.length) {
+		warningsEl.innerHTML = warnings.map(w => '<div>' + esc(w) + '</div>').join('');
+		warningsEl.classList.remove('hidden');
+	} else {
+		warningsEl.textContent = '';
+		warningsEl.classList.add('hidden');
+	}
 
 	if (gpsLat !== null && gpsLon !== null) {
 		const latDms = ddToDms(gpsLat);
@@ -60,6 +87,12 @@ function generateCommand() {
 
 	document.getElementById('command-output').textContent = lines.join('\n');
 }
+
+// -- Target viewer -------------------------------------------------------------
+document.getElementById('target-viewer').addEventListener('change', (e) => {
+	targetViewer = e.target.value;
+	generateCommand();
+});
 
 // -- Copy command ---------------------------------------------------------------
 document.getElementById('copy-cmd').addEventListener('click', () => {
