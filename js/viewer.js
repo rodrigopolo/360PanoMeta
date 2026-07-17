@@ -144,8 +144,10 @@ document.getElementById('use-current-view').addEventListener('click', () => {
 
 document.getElementById('set-north').addEventListener('click', () => {
 	if (!viewer) return;
-	const yaw     = viewer.getYaw();
+	const yaw = viewer.getYaw();
+	const oldPoseHeading = p.poseHeading;
 	p.poseHeading = ((-yaw % 360) + 360) % 360;
+	p.initialHeading = r1(PanoRotation.normalize360(p.initialHeading - oldPoseHeading + p.poseHeading));
 	viewer.setNorthOffset(p.poseHeading);
 	baseRoll  = p.horizonRoll;
 	basePitch = p.horizonPitch;
